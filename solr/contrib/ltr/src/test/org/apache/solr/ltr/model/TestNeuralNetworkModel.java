@@ -29,6 +29,7 @@ import org.apache.solr.ltr.norm.IdentityNormalizer;
 import org.apache.solr.ltr.norm.Normalizer;
 import org.apache.solr.util.SolrPluginUtils;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -75,6 +76,53 @@ public class TestNeuralNetworkModel extends TestRerankBase {
     layer.put("activation", activation);
 
     return layer;
+  }
+
+  @Test
+  public void testActivationFunction() throws Exception {
+    final List<Feature> allFeaturesInStore
+        = getFeatures(new String[] {"constantOne", "constantTwo", "constantThree", "constantFour", "constantFive"});
+    final List<Feature> featuresInModel = new ArrayList<>();
+    featuresInModel.add(allFeaturesInStore.get(0)); //Use only feature "constantOne"
+    final List<Normalizer> norms =
+        new ArrayList<Normalizer>(
+            Collections.nCopies(featuresInModel.size(),IdentityNormalizer.INSTANCE));
+    double[][] matrix = {{1.0d}};
+    double[] bias = {0.0d};
+    String activation = "identity";
+    Map<String, Object> layer = createLayerParams(matrix, bias, activation);
+    List<Object> layers = new ArrayList<>();
+    layers.add(layer);
+    Map<String, Object> params = new HashMap<>();
+    params.put("layers", layers);
+
+    NeuralNetworkModel ltrScoringModel = (NeuralNetworkModel) createNeuralNetworkModel("test_activation_score",
+        featuresInModel, norms, "test_activation_score", allFeaturesInStore, params );
+
+    float[] neg1 = { -1.0f };
+    float[] pos1 = { 1.0f };
+    float[] pos1half = { 1.5f };
+    float[] pos2 = { 2.0f };
+
+    Assert.assertEquals(-1.0f, ltrScoringModel.score(neg1), 0.00001);
+    Assert.assertEquals(1.0f, ltrScoringModel.score(pos1), 0.00001);
+    Assert.assertEquals(1.5f, ltrScoringModel.score(pos1half), 0.00001);
+    Assert.assertEquals(2.0f, ltrScoringModel.score(pos2), 0.00001);
+
+    ((Map<String, Object>) layers.get(0)).put("activation", "relu");
+     ltrScoringModel.setLayers(layers);
+    Assert.assertEquals(0.0f, ltrScoringModel.score(neg1), 0.00001);
+    Assert.assertEquals(1.0f, ltrScoringModel.score(pos1), 0.00001);
+    Assert.assertEquals(1.5f, ltrScoringModel.score(pos1half), 0.00001);
+    Assert.assertEquals(2.0f, ltrScoringModel.score(pos2), 0.00001);
+
+    ((Map<String, Object>) layers.get(0)).put("activation", "sigmoid");
+    ltrScoringModel.setLayers(layers);
+    Assert.assertEquals(0.26894, ltrScoringModel.score(neg1), 0.00001);
+    Assert.assertEquals(0.73106, ltrScoringModel.score(pos1), 0.00001);
+    Assert.assertEquals(0.81757, ltrScoringModel.score(pos1half), 0.00001);
+    Assert.assertEquals(0.88080, ltrScoringModel.score(pos2), 0.00001);
+
   }
 
   @Test
