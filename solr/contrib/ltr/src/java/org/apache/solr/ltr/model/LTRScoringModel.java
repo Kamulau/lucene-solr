@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.search.Explanation;
+import org.apache.solr.common.SolrException;
 import org.apache.solr.core.SolrResourceLoader;
 import org.apache.solr.ltr.feature.Feature;
 import org.apache.solr.ltr.feature.FeatureException;
@@ -100,6 +101,8 @@ public abstract class LTRScoringModel {
         SolrPluginUtils.invokeSetters(model, params.entrySet());
       }
     } catch (final Exception e) {
+      if (SolrException.getRootCause(e) instanceof ModelException)
+        throw new ModelException(SolrException.getRootCause(e).getMessage());
       throw new ModelException("Model type does not exist " + className, e);
     }
     model.validate();
@@ -110,6 +113,9 @@ public abstract class LTRScoringModel {
       List<Normalizer> norms,
       String featureStoreName, List<Feature> allFeatures,
       Map<String,Object> params) {
+    if (features == null || features.contains(null))
+      throw new ModelException("Features cannot be null; perhaps check for " +
+          "missing features");
     this.name = name;
     this.features = features;
     this.featureStoreName = featureStoreName;
