@@ -109,10 +109,17 @@ public abstract class LTRScoringModel {
     return model;
   }
 
+  private static void checkNullFeatures(List<Feature> features) throws ModelException {
+    if (features == null || features.contains(null))
+      throw new ModelException("Features cannot be null; perhaps check for " +
+          "missing features");
+  }
+
   public LTRScoringModel(String name, List<Feature> features,
       List<Normalizer> norms,
       String featureStoreName, List<Feature> allFeatures,
       Map<String,Object> params) {
+    checkNullFeatures(features);
     this.name = name;
     this.features = features;
     this.featureStoreName = featureStoreName;
