@@ -71,20 +71,18 @@ import org.apache.solr.ltr.norm.Normalizer;
  */
 public class LinearModel extends LTRScoringModel {
 
-  private static void checkParams(Map<String, Object> params) throws ModelException {
-    for (Object weight : ((Map<String, Object>) params.get("weights")).values())
-      if (!(weight instanceof Double))
-        throw new ModelException("Error with weight format. Check that weights were entered as float/double.");
-  }
-
   protected Float[] featureToWeight;
 
   public void setWeights(Object weights) {
-    final Map<String,Double> modelWeights = (Map<String,Double>) weights;
-    for (int ii = 0; ii < features.size(); ++ii) {
-      final String key = features.get(ii).getName();
-      final Double val = modelWeights.get(key);
-      featureToWeight[ii] = (val == null ? null : val.floatValue());
+    try {
+      final Map<String,Double> modelWeights = (Map<String,Double>) weights;
+      for (int ii = 0; ii < features.size(); ++ii) {
+        final String key = features.get(ii).getName();
+        final Double val = modelWeights.get(key);
+        featureToWeight[ii] = (val == null ? null : val.floatValue());
+      }
+    } catch (ClassCastException ce) {
+      throw new ModelException("Error with weight format. Check that weights were entered as float/double.");
     }
   }
 
@@ -93,7 +91,6 @@ public class LinearModel extends LTRScoringModel {
       String featureStoreName, List<Feature> allFeatures,
       Map<String,Object> params) {
     super(name, features, norms, featureStoreName, allFeatures, params);
-    checkParams(params);
     featureToWeight = new Float[features.size()];
   }
 
