@@ -214,22 +214,49 @@ public class TestLinearModel extends TestRerankBase {
     }
   }
 
+  @Test
   public void testEmptyFeatureStore() throws Exception {
     final ModelException expectedException =
         new ModelException("Features cannot be null; perhaps check for " +
             "missing features");
-    final Map<String,Object> weights = new HashMap<>();
-    weights.put("whatever", 1d);
-
-    Map<String,Object> params = new HashMap<String,Object>();
-    List<Feature> allFeatures = new ArrayList<>();
-    List<Feature> features = new ArrayList<>();
-    features.add(null);
-    final List<Normalizer> norms =
-        new ArrayList<Normalizer>(
-            Collections.nCopies(features.size(),IdentityNormalizer.INSTANCE));
-    params.put("weights", weights);
     try {
+      final Map<String,Object> weights = new HashMap<>();
+      weights.put("whatever", 1d);
+
+      Map<String,Object> params = new HashMap<String,Object>();
+      List<Feature> allFeatures = new ArrayList<>();
+      List<Feature> features = new ArrayList<>();
+      features.add(null);
+      final List<Normalizer> norms =
+          new ArrayList<Normalizer>(
+              Collections.nCopies(features.size(),IdentityNormalizer.INSTANCE));
+      params.put("weights", weights);
+
+      final LTRScoringModel ltrScoringModel = createLinearModel("test1",
+          features, norms, "test1", allFeatures/*fstore.getFeatures()*/,
+          params);
+      fail("unexpectedly got here instead of catching " + expectedException);
+    } catch (ModelException actualException) {
+      assertEquals(expectedException.toString(), actualException.toString());
+    }
+  }
+
+  @Test
+  public void testInvalidWeightFormat() throws Exception {
+    final ModelException expectedException =
+        new ModelException("Error with weight format." +
+            " Check that weights were entered as float/double.");
+    try {
+      Map<String, Object> weights = new HashMap<>();
+      weights.put("whatever", 1L);
+
+      Map<String,Object> params = new HashMap<>();
+      List<Feature> allFeatures = getFeatures(new String[]{"whatever"});
+      List<Feature> features = new ArrayList<>(allFeatures);
+      final List<Normalizer> norms =
+          new ArrayList<Normalizer>(
+              Collections.nCopies(features.size(),IdentityNormalizer.INSTANCE));
+      params.put("weights", weights);
       final LTRScoringModel ltrScoringModel = createLinearModel("test1",
           features, norms, "test1", allFeatures/*fstore.getFeatures()*/,
           params);
