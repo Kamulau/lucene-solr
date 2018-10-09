@@ -109,24 +109,10 @@ public abstract class LTRScoringModel {
     return model;
   }
 
-  private static void checkParams(Map<String, Object> params) throws ModelException {
-    for (Object weight : ((Map<String, Object>) params.get("weights")).values())
-      if (!(weight instanceof Double))
-        throw new ModelException("Error with weight format. Check that weights were entered as float/double.");
-  }
-
-  private static void checkNullFeatures(List<Feature> features) throws ModelException {
-    if (features == null || features.contains(null))
-      throw new ModelException("Features cannot be null; perhaps check for " +
-          "missing features");
-  }
-
   public LTRScoringModel(String name, List<Feature> features,
       List<Normalizer> norms,
       String featureStoreName, List<Feature> allFeatures,
       Map<String,Object> params) {
-    checkNullFeatures(features);
-    checkParams(params);
     this.name = name;
     this.features = features;
     this.featureStoreName = featureStoreName;

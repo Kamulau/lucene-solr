@@ -71,6 +71,18 @@ import org.apache.solr.ltr.norm.Normalizer;
  */
 public class LinearModel extends LTRScoringModel {
 
+  private static void checkParams(Map<String, Object> params) throws ModelException {
+    for (Object weight : ((Map<String, Object>) params.get("weights")).values())
+      if (!(weight instanceof Double))
+        throw new ModelException("Error with weight format. Check that weights were entered as float/double.");
+  }
+
+  private static void checkNullFeatures(List<Feature> features) throws ModelException {
+    if (features == null || features.contains(null))
+      throw new ModelException("Features cannot be null; perhaps check for " +
+          "missing features");
+  }
+
   protected Float[] featureToWeight;
 
   public void setWeights(Object weights) {
@@ -87,6 +99,8 @@ public class LinearModel extends LTRScoringModel {
       String featureStoreName, List<Feature> allFeatures,
       Map<String,Object> params) {
     super(name, features, norms, featureStoreName, allFeatures, params);
+    checkNullFeatures(features);
+    checkParams(params);
     featureToWeight = new Float[features.size()];
   }
 
