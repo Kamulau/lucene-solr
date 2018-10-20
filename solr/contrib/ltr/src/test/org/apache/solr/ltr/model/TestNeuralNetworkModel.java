@@ -78,6 +78,44 @@ public class TestNeuralNetworkModel extends TestRerankBase {
   }
 
   @Test
+  public void testActivationFunction() {
+    NeuralNetworkModel.Activation activation = NeuralNetworkModel.Activation.Defaults.IDENTITY;
+    assertEquals(-1.0f, activation.apply(-1.0f), 0.00001);
+    assertEquals(0.0f, activation.apply(0.0f), 0.00001);
+    assertEquals(1.0f, activation.apply(1.0f), 0.00001);
+    assertEquals(1.5f, activation.apply(1.5f), 0.00001);
+    assertEquals(2.0f, activation.apply(2.0f), 0.00001);
+
+    activation = NeuralNetworkModel.Activation.Defaults.RELU;
+    assertEquals(0.0f, activation.apply(-1.0f), 0.00001);
+    assertEquals(0.0f, activation.apply(0.0f), 0.00001);
+    assertEquals(1.0f, activation.apply(1.0f), 0.00001);
+    assertEquals(1.5f, activation.apply(1.5f), 0.00001);
+    assertEquals(2.0f, activation.apply(2.0f), 0.00001);
+
+    activation = NeuralNetworkModel.Activation.Defaults.LEAKYRELU;
+    assertEquals(-0.01f, activation.apply(-1.0f), 0.00001);
+    assertEquals(0.0f, activation.apply(0.0f), 0.00001);
+    assertEquals(1.0f, activation.apply(1.0f), 0.00001);
+    assertEquals(1.5f, activation.apply(1.5f), 0.00001);
+    assertEquals(2.0f, activation.apply(2.0f), 0.00001);
+
+    activation = NeuralNetworkModel.Activation.Defaults.SIGMOID;
+    assertEquals(0.26894, activation.apply(-1.0f), 0.00001);
+    assertEquals(0.5f, activation.apply(0.0f), 0.00001);
+    assertEquals(0.73106, activation.apply(1.0f), 0.00001);
+    assertEquals(0.81757, activation.apply(1.5f), 0.00001);
+    assertEquals(0.88080, activation.apply(2.0f), 0.00001);
+
+    activation = NeuralNetworkModel.Activation.Defaults.TANH;
+    assertEquals(-0.7616, activation.apply(-1.0f), 0.00001);
+    assertEquals(0.0f, activation.apply(0.0f), 0.00001);
+    assertEquals(0.7616, activation.apply(1.0f), 0.00001);
+    assertEquals(0.90515, activation.apply(1.5f), 0.00001);
+    assertEquals(0.96403, activation.apply(2.0f), 0.00001);
+  }
+
+  @Test
   public void testLinearAlgebra() {
 
     final double layer1Node1Weight1 = 1.0;
